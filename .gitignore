@@ -2,3 +2,4 @@
 __pycache__/
 .venv/
 path/to/venv/
+.DS_Store
