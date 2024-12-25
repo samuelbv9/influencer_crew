@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import warnings
+import json
 
 from influencer_crew.crew import InfluencerCrew
 
@@ -15,10 +16,14 @@ def run():
     """
     Run the crew.
     """
-    inputs = {
-        'topic': 'AI LLMs'
-    }
-    InfluencerCrew().crew().kickoff(inputs=inputs)
+	
+    # Read the content of the knowledge file
+    with open("knowledge/influencers.txt", "r") as file:
+        influencers_raw_data = file.read()
+
+    input = {"influencer_data": influencers_raw_data}
+
+    InfluencerCrew().crew().kickoff(inputs=input)
 
 
 def train():

@@ -1,17 +1,12 @@
-research_task:
+alignment_evaluation_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is 2024.
+    Analyze the provided influencer data from {influencer_data}, including their bio, recent post captions, comments, engagement metrics, 
+    and other relevant details. Assess the influencer's alignment with Stir's health and wellness values by evaluating whether their 
+    audience and content focus on themes like health, wellness, nutrition, or fitness. Only approve influencers whose audience and 
+    content strongly align with these themes. Provide a clear rationale for your decision, especially for influencers deemed unfit, 
+    detailing why they do not align with Stir's core values.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
-
-reporting_task:
-  description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
-  expected_output: >
-    A fully fledge reports with the mains topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    A decision ("Yes, worth sending Stir" or "No, not worth sending Stir") with a concise explanation of the alignment or lack thereof, 
+    including specific examples from the data reviewed.
+  agent: alignment_evaluator
+  output_file: report.md
