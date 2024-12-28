@@ -4,6 +4,7 @@ import warnings
 import json
 
 from influencer_crew.crew import InfluencerCrew
+from knowledge.influencers import influencers
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -16,14 +17,13 @@ def run():
     """
     Run the crew.
     """
-	
-    # Read the content of the knowledge file
-    with open("knowledge/influencers.txt", "r") as file:
-        influencers_raw_data = file.read()
+    for i in range(0, len(influencers)):
+        print(i)
+        input = {"influencer_data": influencers[i]}
 
-    input = {"influencer_data": influencers_raw_data}
-
-    InfluencerCrew().crew().kickoff(inputs=input)
+        result = InfluencerCrew().crew().kickoff(inputs=input)
+        with open("results.md", "a") as file:
+            file.write(str(result) + "\n")
 
 
 def train():

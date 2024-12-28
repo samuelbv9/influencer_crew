@@ -1,12 +1,13 @@
 alignment_evaluation_task:
   description: >
     Analyze the provided influencer data from {influencer_data}, including their bio, recent post captions, comments, engagement metrics, 
-    and other relevant details. Assess the influencer's alignment with Stir's health and wellness values by evaluating whether their 
-    audience and content focus on themes like health, wellness, nutrition, or fitness. Only approve influencers whose audience and 
-    content strongly align with these themes. Provide a clear rationale for your decision, especially for influencers deemed unfit, 
+    and other relevant details. Assess the influencer's alignment by evaluating whether their audience and content focus on
+    themes like health, wellness, nutrition, or fitness. Be very careful and only approve influencers whose audience and 
+    content very strongly align with those themes and you think their audience would benefit from and be interested in Stir supplement. 
+    Provide a clear rationale for your decision, especially for influencers deemed unfit, 
     detailing why they do not align with Stir's core values.
   expected_output: >
-    A decision ("Yes, worth sending Stir" or "No, not worth sending Stir") with a concise explanation of the alignment or lack thereof, 
-    including specific examples from the data reviewed.
+    For each influencer return 3 fields in this format with the "|" character as a separator.
+    influencer username | YES or NO | Concicse explanation of the alignment or lack thereof, 
+    including specific examples from the data reviewed. 
   agent: alignment_evaluator
-  output_file: report.md
