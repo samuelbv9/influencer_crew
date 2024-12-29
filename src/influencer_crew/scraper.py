@@ -137,16 +137,17 @@ def scraper(influencer_link, page, state_file="auth_state.json"):
     # Navigate to the first influencer's profile
     page.goto(influencer_link)
 
-    # Wait for the page to load completely
     page.wait_for_load_state("networkidle")
-    more_button = page.get_by_role("button", name="more")
-    if more_button:
+
+    try:
+        # Attempt to locate the "more" button and click it
+        more_button = page.get_by_role("button", name="more", timeout=3000)
         more_button.click()
+    except:
+       pass
     header_text = page.locator("header").inner_text()
-    print(header_text)
 
     username = influencer_link.split("instagram.com")[1]
-    print(username)
     # Locate all posts
     all_posts = page.locator(f'a[href^="{username}p/"], a[href^="{username}reel/"]')
 
@@ -163,13 +164,17 @@ def scraper(influencer_link, page, state_file="auth_state.json"):
         # Navigate to the closest parent div containing the <ul>
         parent_div = post.locator('xpath=ancestor::div[1]')
         parent_div.hover()
-        likes_comments_ul = parent_div.locator("ul")  # Locate the <ul> inside the parent
-        likes_comments = likes_comments_ul.inner_text()
-        
-        # Split the text by newline or whitespace
-        split_text = likes_comments.split("\n")
-        likes.append(split_text[0])
-        commentNums.append(split_text[1])
+        try:
+            likes_comments_ul = parent_div.locator("ul", timeout=3000)  # Locate the <ul> inside the parent
+            likes_comments = likes_comments_ul.inner_text()
+            # Split the text by newline or whitespace
+            split_text = likes_comments.split("\n")
+            likes.append(split_text[0])
+            commentNums.append(split_text[1])
+        except:
+            likes_comments = "N/A"
+            likes.append(likes_comments)
+            commentNums.append(likes_comments)
 
     captions = []
     all_comments = []
@@ -179,12 +184,18 @@ def scraper(influencer_link, page, state_file="auth_state.json"):
         captions.append(post_caption)
         all_comments.append(comments)
 
-
-    print("Likes: ", likes)
-    print("Comments: ", commentNums)
-    print("Post Links: ", post_links)
-    print("Captions: ", captions)
-    print("All Comments: ", all_comments)
+        # Generate the formatted text
+    formatted_output = f"""
+        {username}
+        {header_text}
+        LINKS
+        Likes:  {likes}
+        Comments:  {commentNums}
+        Post Links:  {post_links}
+        Captions:  {captions}
+        All Comments:  {all_comments}
+    """
+    return formatted_output
     
 
 def post_scraper(post_link, page, state_file="auth_state.json"):
@@ -193,7 +204,10 @@ def post_scraper(post_link, page, state_file="auth_state.json"):
     # Wait for the page to load completely
     page.wait_for_load_state("networkidle")
 
-    post_caption = page.locator("h1").inner_text()
+    try:
+        post_caption = page.locator("h1", timeout=3000).inner_text()
+    except:
+        post_caption = "No caption available"
 
     # Initialize a list to store first comments
     all_comments = []
@@ -225,18 +239,31 @@ def scraper_driver():
     print("Launching browser...")
     p = sync_playwright().start()
     browser = p.chromium.launch(headless=False)  # Do NOT use headless=True
-    context = browser.new_context(storage_state="auth_state.json")  # Use persistent session if needed
+    context = browser.new_context(storage_state="src/influencer_crew/auth_state.json")  # Use persistent session if needed
     page = context.new_page()
 
-    # similar_accounts, page = influencer_similar_accounts(primary_influencer_link, page)
+    similar_accounts, page = influencer_similar_accounts(primary_influencer_link, page)
+    print(similar_accounts)
 
-    # #Take in list of similar accounts
-    # final_list = initial_influencer_filtering(similar_accounts, page)
-    # print(final_list)
+    #Take in list of similar accounts
+    final_list = initial_influencer_filtering(similar_accounts, page)
+    print(final_list)
 
-    scraper("https://www.instagram.com/bradstulberg/", page)
+    scraped_info = []
+    for link in final_list:
+        scraped_data = scraper(link, page)
+        scraped_info.append(f'"""{scraped_data}"""')
 
+    output_file = "src/influencer_crew/influencers.py"
+    with open(output_file, "w") as file:
+        file.write("influencers = [\n")
+        for item in scraped_info:
+            file.write(f"    {item},\n")
+        file.write("]\n")
     # Keep the browser open
     input("Press Enter to close the browser...")
     browser.close()
     p.stop()
+
+if __name__ == "__main__":
+    scraper_driver()
