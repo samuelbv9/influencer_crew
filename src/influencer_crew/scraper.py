@@ -254,7 +254,7 @@ def scraper_driver():
         scraped_data = scraper(link, page)
         scraped_info.append(f'"""{scraped_data}"""')
 
-    output_file = "src/influencer_crew/influencers.py"
+    output_file = "src/influencer_crew/knowledge/influencers.py"
     with open(output_file, "w") as file:
         file.write("influencers = [\n")
         for item in scraped_info:
