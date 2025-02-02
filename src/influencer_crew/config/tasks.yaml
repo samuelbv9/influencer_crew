@@ -7,7 +7,6 @@ alignment_evaluation_task:
     Provide a clear rationale for your decision, especially for influencers deemed unfit, 
     detailing why they do not align with Stir's core values.
   expected_output: >
-    For each influencer return 3 fields in this format with the "|" character as a separator.
-    influencer username | YES or NO | Concicse explanation of the alignment or lack thereof, 
-    including specific examples from the data reviewed. 
+    If the influencer is chosen, return 5 fields in this format a comma seperating the values. If influencer is not a good fit return NULL.
+    "influencer username", "influencer name", "instagram link", number of followers
   agent: alignment_evaluator

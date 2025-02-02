@@ -1,4 +1,6 @@
 from playwright.sync_api import sync_playwright
+from apify_scraper import apify_scrape
+from main import run
 
 def login_to_instagram(username, password, state_file="auth_state.json"):
     with sync_playwright() as p:
@@ -91,6 +93,7 @@ def initial_influencer_filtering(influencer_links, page, state_file="auth_state.
     allowedLocation = "United States"
 
     filtered_list = []
+    filtered_usernames = []
 
     for influencer in influencer_links:
         # Navigate to the first influencer's profile
@@ -120,10 +123,13 @@ def initial_influencer_filtering(influencer_links, page, state_file="auth_state.
 
             if location == allowedLocation:
                 filtered_list.append(influencer)
+                username = influencer.rstrip('/').split('/')[-1]
+                filtered_usernames.append(username)
+
         except:
             continue
 
-    return filtered_list
+    return filtered_list, filtered_usernames
 
 def calculate_followers_num(followers):
     followers = followers.replace(',', '')
@@ -238,7 +244,7 @@ def scraper_driver():
 
     print("Launching browser...")
     p = sync_playwright().start()
-    browser = p.chromium.launch(headless=False)  # Do NOT use headless=True
+    browser = p.chromium.launch(headless=False)
     context = browser.new_context(storage_state="src/influencer_crew/auth_state.json")  # Use persistent session if needed
     page = context.new_page()
 
@@ -246,15 +252,21 @@ def scraper_driver():
     print(similar_accounts)
 
     #Take in list of similar accounts
-    final_list = initial_influencer_filtering(similar_accounts, page)
-    print(final_list)
+    final_list, filtered_usernames = initial_influencer_filtering(similar_accounts, page)
+    final_list = final_list
+    filtered_usernames = filtered_usernames
 
     scraped_info = []
-    for link in final_list:
-        scraped_data = scraper(link, page)
-        scraped_info.append(f'"""{scraped_data}"""')
+    for url, username in zip(final_list, filtered_usernames):
+        result = apify_scrape(url, username)
+        scraped_info.append(result)
 
-    output_file = "src/influencer_crew/knowledge/influencers.py"
+    # scraped_info = []
+    # for link in final_list:
+    #     scraped_data = scraper(link, page)
+    #     scraped_info.append(f'"""{scraped_data}"""')
+
+    output_file = "knowledge/influencers.py"
     with open(output_file, "w") as file:
         file.write("influencers = [\n")
         for item in scraped_info:
@@ -264,6 +276,9 @@ def scraper_driver():
     input("Press Enter to close the browser...")
     browser.close()
     p.stop()
+
+    #Start AI Agent flow
+    run()
 
 if __name__ == "__main__":
     scraper_driver()
