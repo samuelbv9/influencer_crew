@@ -54,7 +54,7 @@ def influencer_similar_accounts(influencer_link, page, state_file="auth_state.js
     page.goto(influencer_link)
 
     # Wait for the page to load completely
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("load")
 
     # Click on the "Similar accounts" button
     page.get_by_role("button", name="Similar accounts").click()
@@ -100,7 +100,7 @@ def initial_influencer_filtering(influencer_links, page, state_file="auth_state.
         page.goto(influencer)
 
         # Wait for the page to load completely
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("load")
 
         try:
             # Example of using .get_by_role()
@@ -116,7 +116,7 @@ def initial_influencer_filtering(influencer_links, page, state_file="auth_state.
             page.get_by_role("heading", name=username).click()
 
             # Wait for the page to load completely
-            page.wait_for_load_state("networkidle")
+            page.wait_for_load_state("load")
             accountLocationText = page.get_by_role("button", name="Account based in").text_content()
             location = accountLocationText.split("Account based in")[1]
             print(location)
@@ -143,7 +143,7 @@ def scraper(influencer_link, page, state_file="auth_state.json"):
     # Navigate to the first influencer's profile
     page.goto(influencer_link)
 
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("load")
 
     try:
         # Attempt to locate the "more" button and click it
@@ -208,7 +208,7 @@ def post_scraper(post_link, page, state_file="auth_state.json"):
     # Navigate to the post link
     page.goto(post_link)
     # Wait for the page to load completely
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("load")
 
     try:
         post_caption = page.locator("h1", timeout=3000).inner_text()
