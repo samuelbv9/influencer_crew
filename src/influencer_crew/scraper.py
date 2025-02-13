@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from apify_scraper import apify_scrape
 from main import run
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def login_to_instagram(username, password, state_file="auth_state.json"):
     with sync_playwright() as p:
@@ -253,18 +254,19 @@ def scraper_driver():
 
     #Take in list of similar accounts
     final_list, filtered_usernames = initial_influencer_filtering(similar_accounts, page)
-    final_list = final_list
-    filtered_usernames = filtered_usernames
 
     scraped_info = []
-    for url, username in zip(final_list, filtered_usernames):
-        result = apify_scrape(url, username)
-        scraped_info.append(result)
-
-    # scraped_info = []
-    # for link in final_list:
-    #     scraped_data = scraper(link, page)
-    #     scraped_info.append(f'"""{scraped_data}"""')
+    with ThreadPoolExecutor() as executor:
+        future_to_username = {executor.submit(apify_scrape, url, username): (url, username) for url, username in zip(final_list, filtered_usernames)}
+        
+        for future in as_completed(future_to_username):
+            url, username = future_to_username[future]
+            try:
+                result = future.result()
+                scraped_info.append(result)
+                print(f"✅ Successfully scraped {username}")
+            except Exception as e:
+                print(f"❌ Error scraping {username}: {e}")
 
     output_file = "knowledge/influencers.py"
     with open(output_file, "w") as file:
